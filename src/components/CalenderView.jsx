@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import bg from "../images/top-view-wedding-planning-resources-arrangement.jpg";
 import {
   format,
   startOfMonth,
@@ -118,7 +119,7 @@ const CalendarView = () => {
 const styles = {
   container: {
     padding: "20px",
-    background: "linear-gradient(to bottom,rgb(92, 88, 162),rgb(100, 106, 179))",
+    background: `url(${bg}) no-repeat center center/cover`, // Add background image
     minHeight: "100vh",
     fontFamily: "'Poppins', sans-serif",
     color: "#333",
@@ -153,7 +154,7 @@ const styles = {
     textAlign: "center",
     fontSize: "16px",
     fontWeight: "bold",
-    color: "#2193b0",
+    color: "rgba(66, 40, 9, 0.63)",
   },
   dayNameCell: {
     padding: "10px",
@@ -177,7 +178,7 @@ const styles = {
     position: "relative",
   },
   today: {
-    border: "2px solid #2193b0",
+    border: "2px solid rgba(176, 116, 33, 0.63)",
     backgroundColor: "#e1f5fe",
   },
   dateText: {
@@ -190,7 +191,7 @@ const styles = {
     top: "5px",
     right: "5px",
     backgroundColor: "#2193b0",
-    color: "#fff",
+    color: "rgba(66, 40, 9, 0.63)",
     padding: "5px",
     borderRadius: "5px",
     fontSize: "12px",
@@ -255,5 +256,4 @@ const styles = {
     },
   },
 };
-
 export default CalendarView;

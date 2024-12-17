@@ -1,5 +1,6 @@
 import React from "react";
 
+import bg from '../images/top-view-wedding-planning-resources-arrangement.jpg'
 const HomePage = ({ onStart }) => {
   return (
     <div style={styles.container}>
@@ -20,12 +21,15 @@ const styles = {
     justifyContent: "center",
     alignItems: "center",
     height: "100vh",
-    background: "linear-gradient(to bottom,rgb(92, 88, 162),rgb(100, 106, 179))",
+    background: `url(${bg}) no-repeat center center/cover`, // Image as background
     color: "#fff",
     textAlign: "center",
   },
   content: {
     maxWidth: "600px",
+    padding: "20px",
+    backdropFilter: "blur(5px)", // Optional: adds a blur effect to improve readability over the image
+    backgroundColor: "rgba(0, 0, 0, 0.5)", // Optional: semi-transparent background to improve readability
   },
   title: {
     fontSize: "48px",
@@ -38,7 +42,7 @@ const styles = {
   button: {
     padding: "15px 30px",
     fontSize: "18px",
-    backgroundColor: "#ff8c00",
+    backgroundColor: "rgba(66, 40, 9, 0.63)",
     color: "#fff",
     border: "none",
     borderRadius: "5px",
