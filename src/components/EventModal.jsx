@@ -32,6 +32,16 @@ const EventModal = ({ selectedDate, onClose }) => {
     alert("Event saved successfully!");
   };
 
+  const handleDelete = (index) => {
+    // Create a new array without the deleted event
+    const updatedEvents = events.filter((_, i) => i !== index);
+
+    // Update localStorage and the state
+    localStorage.setItem(format(selectedDate, "yyyy-MM-dd"), JSON.stringify(updatedEvents));
+    setEvents(updatedEvents);
+    alert("Event deleted successfully!");
+  };
+
   return (
     <div style={styles.modalOverlay}>
       <div style={styles.modal}>
@@ -98,6 +108,12 @@ const EventModal = ({ selectedDate, onClose }) => {
               <div key={index} style={styles.eventItem}>
                 <strong>{event.name}</strong> | {event.startTime} - {event.endTime}
                 <p>{event.description}</p>
+                <button
+                  style={styles.deleteButton}
+                  onClick={() => handleDelete(index)}
+                >
+                  Delete
+                </button>
               </div>
             ))
           ) : (
@@ -201,6 +217,16 @@ const styles = {
     border: "1px solid #ddd",
     borderRadius: "6px",
     backgroundColor: "#f9f9f9",
+  },
+  deleteButton: {
+    backgroundColor: "#f44336",
+    color: "#fff",
+    padding: "5px 10px",
+    border: "none",
+    borderRadius: "8px",
+    cursor: "pointer",
+    marginTop: "10px",
+    fontSize: "14px",
   },
 };
 
