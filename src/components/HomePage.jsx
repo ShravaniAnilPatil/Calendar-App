@@ -4,7 +4,7 @@ const HomePage = ({ onStart }) => {
   return (
     <div style={styles.container}>
       <div style={styles.content}>
-        <h1 style={styles.title}>Welcome to Your Event Planner</h1>
+        <h1 style={styles.title}>Welcome to EventHub</h1>
         <p style={styles.subtitle}>Effortlessly plan, view, and manage your events.</p>
         <button style={styles.button} onClick={onStart}>
           Plan Events Now
@@ -20,7 +20,7 @@ const styles = {
     justifyContent: "center",
     alignItems: "center",
     height: "100vh",
-    background: "linear-gradient(to right, #00c6ff, #0072ff)",
+    background: "linear-gradient(to bottom,rgb(92, 88, 162),rgb(100, 106, 179))",
     color: "#fff",
     textAlign: "center",
   },

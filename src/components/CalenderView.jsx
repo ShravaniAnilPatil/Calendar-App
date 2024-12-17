@@ -1,207 +1,259 @@
-import React, { useState, useEffect } from "react";
-import { format } from "date-fns";
+import React, { useState } from "react";
+import {
+  format,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+  addMonths,
+  subMonths,
+  isToday,
+  isBefore,
+  getDay,
+} from "date-fns";
+import EventModal from "./EventModal";
+import { FaPlus } from "react-icons/fa";
 
-const EventModal = ({ selectedDate, onClose }) => {
-  const [eventData, setEventData] = useState({
-    name: "",
-    startTime: "",
-    endTime: "",
-    description: "",
+const CalendarView = () => {
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [events, setEvents] = useState({});
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  // Calculate all days in the current month
+  const daysInMonth = eachDayOfInterval({
+    start: startOfMonth(currentMonth),
+    end: endOfMonth(currentMonth),
   });
-  const [events, setEvents] = useState([]);
 
-  useEffect(() => {
-    // Load events for the selected date from localStorage
-    const savedEvents = JSON.parse(localStorage.getItem(format(selectedDate, "yyyy-MM-dd"))) || [];
-    setEvents(savedEvents);
-  }, [selectedDate]);
+  const goToPreviousMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
+  const goToNextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
 
-  const handleSave = () => {
-    if (!eventData.name || !eventData.startTime || !eventData.endTime) {
-      alert("Please fill out all required fields!");
-      return;
+  const openEventModal = (date) => {
+    const today = new Date();
+    if (isBefore(date, today)) {
+      setErrorMessage("Day has passed. Events cannot be planned for past days.");
+    } else {
+      setSelectedDate(date);
+      setErrorMessage(""); // Clear any previous error messages
+      setIsModalOpen(true);
     }
+  };
 
-    // Save the new event to localStorage
-    const updatedEvents = [...events, eventData];
-    localStorage.setItem(format(selectedDate, "yyyy-MM-dd"), JSON.stringify(updatedEvents));
+  const saveEvent = (eventData) => {
+    setEvents({ ...events, [selectedDate]: [...(events[selectedDate] || []), eventData] });
+    setIsModalOpen(false);
+  };
 
-    // Update the state and clear inputs
-    setEvents(updatedEvents);
-    setEventData({ name: "", startTime: "", endTime: "", description: "" });
-    alert("Event saved successfully!");
+  const getEventCount = (date) => {
+    return events[date] ? events[date].length : 0;
+  };
+
+  // Get the name of the day (e.g., "Mon", "Tue", etc.)
+  const getDayName = (date) => {
+    const dayIndex = getDay(date); // Get index of the day (0 = Sunday, 1 = Monday, etc.)
+    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    return days[dayIndex];
   };
 
   return (
-    <div style={styles.modalOverlay}>
-      <div style={styles.modal}>
-        <h2 style={styles.title}>📅 Events for {format(selectedDate, "dd MMM yyyy")}</h2>
-
-        {/* Form to add events */}
-        <div style={styles.inputGroup}>
-          <label style={styles.label}>Event Name *</label>
-          <input
-            type="text"
-            placeholder="Enter event name"
-            style={styles.input}
-            value={eventData.name}
-            onChange={(e) => setEventData({ ...eventData, name: e.target.value })}
-          />
-        </div>
-
-        <div style={styles.inputRow}>
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Start Time *</label>
-            <input
-              type="time"
-              style={styles.input}
-              value={eventData.startTime}
-              onChange={(e) => setEventData({ ...eventData, startTime: e.target.value })}
-            />
-          </div>
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>End Time *</label>
-            <input
-              type="time"
-              style={styles.input}
-              value={eventData.endTime}
-              onChange={(e) => setEventData({ ...eventData, endTime: e.target.value })}
-            />
-          </div>
-        </div>
-
-        <div style={styles.inputGroup}>
-          <label style={styles.label}>Description</label>
-          <textarea
-            rows="4"
-            placeholder="Add event description"
-            style={styles.textarea}
-            value={eventData.description}
-            onChange={(e) => setEventData({ ...eventData, description: e.target.value })}
-          />
-        </div>
-
-        <div style={styles.buttonGroup}>
-          <button style={styles.saveButton} onClick={handleSave}>
-            Save Event
-          </button>
-          <button style={styles.closeButton} onClick={onClose}>
-            Close
-          </button>
-        </div>
-
-        {/* Display events for the selected day */}
-        <div style={styles.eventList}>
-          <h3>Saved Events:</h3>
-          {events.length > 0 ? (
-            events.map((event, index) => (
-              <div key={index} style={styles.eventItem}>
-                <strong>{event.name}</strong> | {event.startTime} - {event.endTime}
-                <p>{event.description}</p>
-              </div>
-            ))
-          ) : (
-            <p>No events for this day.</p>
-          )}
-        </div>
+    <div style={styles.container}>
+      <div style={styles.header}>
+        <button style={styles.navButton} onClick={goToPreviousMonth}>
+          &#8592; Previous
+        </button>
+        <h1 style={styles.title}>{format(currentMonth, "MMMM yyyy")}</h1>
+        <button style={styles.navButton} onClick={goToNextMonth}>
+          Next &#8594;
+        </button>
       </div>
+
+      {/* Day names */}
+      <div style={styles.dayNames}>
+        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day, index) => (
+          <div key={index} style={styles.dayNameCell}>
+            <span>{day}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Days in month */}
+      <div style={styles.grid}>
+        {daysInMonth.map((day) => (
+          <div
+            key={day}
+            style={{
+              ...styles.day,
+              ...(isToday(day) && styles.today),
+            }}
+            onClick={() => openEventModal(day)}
+          >
+            <span style={styles.dateText}>{format(day, "dd")}</span>
+            {getEventCount(day) > 0 && (
+              <div style={styles.eventCount}>
+                {getEventCount(day)} {getEventCount(day) === 1 ? "Event" : "Events"}
+              </div>
+            )}
+            <div style={styles.addButton}>
+              <FaPlus size={20} title="Add Event" />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Display error message if selected day is in the past */}
+      {errorMessage && <div style={styles.errorMessage}>{errorMessage}</div>}
+
+      {isModalOpen && (
+        <EventModal
+          selectedDate={selectedDate}
+          onSave={saveEvent}
+          onClose={() => setIsModalOpen(false)}
+        />
+      )}
     </div>
   );
 };
 
-// CSS-in-JS styles
 const styles = {
-  modalOverlay: {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    width: "100%",
-    height: "100%",
-    backgroundColor: "rgba(0, 0, 0, 0.7)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 1000,
-  },
-  modal: {
-    backgroundColor: "#fff",
-    padding: "30px",
-    borderRadius: "12px",
-    boxShadow: "0 10px 30px rgba(0, 0, 0, 0.2)",
-    width: "90%",
-    maxWidth: "500px",
+  container: {
+    padding: "20px",
+    background: "linear-gradient(to bottom,rgb(92, 88, 162),rgb(100, 106, 179))",
+    minHeight: "100vh",
     fontFamily: "'Poppins', sans-serif",
-  },
-  title: {
-    fontSize: "22px",
-    fontWeight: "600",
-    marginBottom: "20px",
     color: "#333",
-    textAlign: "center",
   },
-  inputGroup: {
-    display: "flex",
-    flexDirection: "column",
-    marginBottom: "15px",
-  },
-  label: {
-    marginBottom: "8px",
-    fontSize: "14px",
-    fontWeight: "500",
-    color: "#555",
-  },
-  input: {
-    padding: "10px",
-    fontSize: "16px",
-    border: "1px solid #ccc",
-    borderRadius: "8px",
-    outline: "none",
-  },
-  textarea: {
-    padding: "10px",
-    fontSize: "16px",
-    border: "1px solid #ccc",
-    borderRadius: "8px",
-    resize: "none",
-  },
-  inputRow: {
-    display: "flex",
-    gap: "10px",
-  },
-  buttonGroup: {
+  header: {
     display: "flex",
     justifyContent: "space-between",
-    marginTop: "20px",
-  },
-  saveButton: {
-    backgroundColor: "#4CAF50",
+    alignItems: "center",
+    marginBottom: "20px",
     color: "#fff",
-    padding: "10px 20px",
+  },
+  title: {
+    fontSize: "28px",
+    fontWeight: "bold",
+  },
+  navButton: {
+    backgroundColor: "#fff",
+    color: "#2193b0",
     border: "none",
     borderRadius: "8px",
+    padding: "10px 15px",
     cursor: "pointer",
-    transition: "background 0.3s",
+    fontSize: "16px",
+    boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+    transition: "transform 0.2s",
   },
-  closeButton: {
-    backgroundColor: "#f44336",
-    color: "#fff",
-    padding: "10px 20px",
-    border: "none",
-    borderRadius: "8px",
-    cursor: "pointer",
-  },
-  eventList: {
-    marginTop: "20px",
-    paddingTop: "15px",
-    borderTop: "1px solid #eee",
-  },
-  eventItem: {
-    padding: "8px",
+  dayNames: {
+    display: "grid",
+    gridTemplateColumns: "repeat(7, 1fr)",
+    gap: "10px",
     marginBottom: "10px",
-    border: "1px solid #ddd",
-    borderRadius: "6px",
-    backgroundColor: "#f9f9f9",
+    textAlign: "center",
+    fontSize: "16px",
+    fontWeight: "bold",
+    color: "#2193b0",
+  },
+  dayNameCell: {
+    padding: "10px",
+    backgroundColor: "#fff",
+    borderRadius: "8px",
+    boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+  },
+  grid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(7, 1fr)",
+    gap: "15px",
+  },
+  day: {
+    backgroundColor: "#ffffff",
+    borderRadius: "12px",
+    boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+    padding: "15px",
+    textAlign: "center",
+    cursor: "pointer",
+    transition: "transform 0.3s, background-color 0.3s",
+    position: "relative",
+  },
+  today: {
+    border: "2px solid #2193b0",
+    backgroundColor: "#e1f5fe",
+  },
+  dateText: {
+    fontSize: "20px",
+    fontWeight: "600",
+    color: "#333",
+  },
+  eventCount: {
+    position: "absolute",
+    top: "5px",
+    right: "5px",
+    backgroundColor: "#2193b0",
+    color: "#fff",
+    padding: "5px",
+    borderRadius: "5px",
+    fontSize: "12px",
+    fontWeight: "600",
+  },
+  addButton: {
+    position: "absolute",
+    bottom: "5px",
+    right: "5px",
+    color: "#2193b0",
+    cursor: "pointer",
+  },
+  errorMessage: {
+    color: "#d32f2f",
+    textAlign: "center",
+    fontSize: "16px",
+    fontWeight: "bold",
+    marginTop: "20px",
+  },
+
+  // Responsive Styles
+  "@media (max-width: 768px)": {
+    title: {
+      fontSize: "24px",
+    },
+    grid: {
+      gridTemplateColumns: "repeat(4, 1fr)",
+    },
+    dayNameCell: {
+      fontSize: "14px",
+    },
+    day: {
+      padding: "10px",
+    },
+    dateText: {
+      fontSize: "16px",
+    },
+    navButton: {
+      padding: "8px 12px",
+      fontSize: "14px",
+    },
+    errorMessage: {
+      fontSize: "14px",
+    },
+  },
+  "@media (max-width: 480px)": {
+    grid: {
+      gridTemplateColumns: "repeat(3, 1fr)",
+    },
+    dayNameCell: {
+      fontSize: "12px",
+    },
+    day: {
+      padding: "8px",
+    },
+    dateText: {
+      fontSize: "14px",
+    },
+    navButton: {
+      padding: "6px 10px",
+      fontSize: "12px",
+    },
   },
 };
 
-export default EventModal;
+export default CalendarView;
