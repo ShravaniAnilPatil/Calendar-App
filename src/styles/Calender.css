@@ -1,0 +1,8 @@
+.calendar { display: flex; flex-direction: column; align-items: center; }
+.calendar-header { display: flex; justify-content: space-between; width: 300px; }
+.weekdays, .row { display: flex; }
+.cell { padding: 10px; border: 1px solid #ddd; text-align: center; cursor: pointer; width: 40px; height: 40px; }
+.today { background-color: #f0f8ff; }
+.selected { background-color: #add8e6; }
+.event-marker { background-color: red; border-radius: 50%; width: 8px; height: 8px; margin: auto; }
+.modal { position: fixed; top: 20%; left: 30%; background: white; padding: 20px; border: 1px solid #ccc; }
